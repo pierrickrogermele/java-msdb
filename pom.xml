@@ -25,10 +25,16 @@
 			<version>2.1.0</version>
 		</dependency>
 		<dependency>
+			<groupId>com.github.lucarosellini.rJava</groupId>
+			<artifactId>JRIEngine</artifactId>
+			<version>0.9-7</version>
+		</dependency>
+
+<!--		<dependency>
 			<groupId>org.nuiton.thirdparty</groupId>
 			<artifactId>Rserve</artifactId>
 			<version>1.7-3</version>
-		</dependency>
+		</dependency>-->
 
 	</dependencies>
 

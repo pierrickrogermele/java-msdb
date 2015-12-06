@@ -1,51 +1,41 @@
-import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Assert;
+import org.junit.After;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
 
-import org.rosuda.REngine.Rserve.RConnection;
-import org.rosuda.REngine.Rserve.RserveException;
+import org.openscience.msdb.MsPeakForestDb;
+import org.rosuda.REngine.REngine;
+import org.rosuda.REngine.REngineException;
+import org.rosuda.REngine.REXPMismatchException;
 
 /**
  * @author Pierrick Roger
  */
 public class TestMsDb {
 
-	//////////////////
-	// START RSERVE //
-	//////////////////
+	REngine rengine = null;
 
-	static Process rserve_process = null;
+	///////////////////
+	// START RENGINE //
+	///////////////////
 
-	@BeforeClass
-	public static void startRserve() throws java.io.IOException, RserveException, InterruptedException {
-		rserve_process = Runtime.getRuntime().exec("R -e 'library(Rserve);run.Rserve()'");
-		int i = 0;
-		while(true) {
-			Thread.sleep(500);
-			try {
-				RConnection c = new RConnection();// make a new local connection on default port (6311)
-			} catch (RserveException e) {
-				++i;
-				if (i < 5)
-					continue;
-			}
-			break;
-		}
+	@Before
+	public void startREngine() throws REngineException {
+		this.rengine = org.rosuda.REngine.JRI.JRIEngine.createEngine();
 	}
 
-	/////////////////
-	// STOP RSERVE //
-	/////////////////
+	//////////////////
+	// STOP RENGINE //
+	//////////////////
 
-	@AfterClass
-	public static void stopRserve() {
-		if (rserve_process != null)
-			rserve_process.destroy();
+	@After
+	public void stopREngine() {
+		if (rengine != null) {
+			this.rengine.close();
+			this.rengine = null;
+		}
 	}
 
 	////////////////////
@@ -53,8 +43,7 @@ public class TestMsDb {
 	////////////////////
 
 	@Test
-	public void testMzSearch() {
-		System.err.println("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
-		System.out.println("BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB");
+	public void testMzSearch() throws java.net.MalformedURLException, REngineException, REXPMismatchException {
+		MsPeakForestDb db = new MsPeakForestDb(this.rengine, new java.net.URL("http://rest.peakforest.org/"), "java-msdb.test ; pierrick.roger@gmail.com");
 	}
 }
