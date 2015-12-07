@@ -9,6 +9,7 @@ import org.openscience.msdb.MsDb;
 import org.openscience.msdb.MsPeakForestDb;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Vector;
 import java.util.HashMap;
 import org.rosuda.REngine.REngine;
 import org.rosuda.REngine.REXP;
@@ -51,8 +52,9 @@ public class TestMsDb {
 	@Test
 	public void testMzSearch() throws java.net.MalformedURLException, REngineException, REXPMismatchException {
 		MsPeakForestDb db = new MsPeakForestDb(this.rengine, new java.net.URL("http://rest.peakforest.org/"), "java-msdb.test ; pierrick.roger@gmail.com");
-		Map<MsDb.Field, REXP> input = new HashMap<MsDb.Field, REXP>();
-		REXP mz = new REXPDouble(100.0);
+		Map<MsDb.Field, Collection> input = new HashMap<MsDb.Field, Collection>();
+		Vector<Double> mz = new Vector<Double>();
+		mz.add(100.0);
 		input.put(MsDb.Field.MZ, mz);
 		Map<MsDb.Field, Collection> output = db.searchMzRt(input, MsDb.Mode.POSITIVE, 0.0, 5.0);
 

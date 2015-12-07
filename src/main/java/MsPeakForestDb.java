@@ -7,6 +7,7 @@ import java.util.Collection;
 import java.util.Arrays;
 import org.rosuda.REngine.REngine;
 import org.rosuda.REngine.REXP;
+import org.rosuda.REngine.REXPDouble;
 import org.rosuda.REngine.REngineException;
 import org.rosuda.REngine.REXPMismatchException;
 
@@ -36,11 +37,25 @@ public class MsPeakForestDb extends MsDb {
 		this.rengine.parseAndEval("db <- MsPeakForestDb$new(url = \"" + url + "\", useragent = \"" + useragent + "\")", null, true);
 	}
 
+	////////////////////////
+	// COLLECTION TO REXP //
+	////////////////////////
+
+	private static REXPDouble collectionToREXPDouble(Collection c) {
+
+		double[] v = new double[c.size()];
+		int i = 0;
+		for (Double x: (Collection<Double>)c)
+			v[i++] = x;
+
+		return new REXPDouble(v);
+	}
+
 	//////////////////
 	// SEARCH MZ RT //
 	//////////////////
 
-	public Map<Field, Collection> searchMzRt(Map<Field, REXP> input, Mode mode, double shift, double prec) throws REngineException, REXPMismatchException {
+	public Map<Field, Collection> searchMzRt(Map<Field, Collection> input, Mode mode, double shift, double prec) throws REngineException, REXPMismatchException {
 
 		// Check that MZ is present
 		if ( ! input.containsKey(Field.MZ))
@@ -53,7 +68,7 @@ public class MsPeakForestDb extends MsDb {
 		// TODO Thread safe ? lock/unlock
 
 		// Create input stream
-		this.rengine.assign("mz", input.get(Field.MZ));
+		this.rengine.assign("mz", collectionToREXPDouble(input.get(Field.MZ)));
 		this.rengine.parseAndEval("input.stream <- MsDbInputDataFrameStream$new(msdb.make.input.df(mz))");
 		this.rengine.parseAndEval("db$setInputStream(input.stream)");
 

@@ -2,7 +2,6 @@ package org.openscience.msdb;
 
 import java.util.Map;
 import java.util.Collection;
-import org.rosuda.REngine.REXP;
 import org.rosuda.REngine.REngineException;
 import org.rosuda.REngine.REXPMismatchException;
 
@@ -32,5 +31,5 @@ public abstract class MsDb {
 	/**
 	 * @param input The input data.
 	 */
-	public abstract Map<Field, Collection> searchMzRt(Map<Field, REXP> input, Mode mode, double shift, double prec) throws REngineException, REXPMismatchException;
+	public abstract Map<Field, Collection> searchMzRt(Map<Field, Collection> input, Mode mode, double shift, double prec) throws REngineException, REXPMismatchException;
 }
