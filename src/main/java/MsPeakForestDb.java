@@ -70,9 +70,6 @@ public class MsPeakForestDb extends MsDb {
 		// Get output
 		Map<Field, Collection> output = new HashMap<Field, Collection>();
 		this.rengine.parseAndEval("output <- output.stream$getDataFrame()");
-		String[] cols = this.rengine.parseAndEval("colnames(output)").asStrings();
-		for (String c: cols)
-			System.out.println(c);
 		output.put(Field.MOLID, Arrays.asList(this.rengine.parseAndEval("output[[MSDB.TAG.MOLID]]").asStrings()));
 		output.put(Field.MZ, Arrays.asList(this.rengine.parseAndEval("output[[MSDB.TAG.MZ]]").asDoubles()));
 		output.put(Field.MZTHEO, Arrays.asList(this.rengine.parseAndEval("output[[MSDB.TAG.MZTHEO]]").asDoubles()));

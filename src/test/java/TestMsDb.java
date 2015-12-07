@@ -55,6 +55,8 @@ public class TestMsDb {
 		REXP mz = new REXPDouble(100.0);
 		input.put(MsDb.Field.MZ, mz);
 		Map<MsDb.Field, Collection> output = db.searchMzRt(input, MsDb.Mode.POSITIVE, 0.0, 5.0);
+
+		// Check that all requested fields are present
 		assertTrue(output.containsKey(MsDb.Field.MOLID));
 		assertTrue(output.containsKey(MsDb.Field.MZ));
 		assertTrue(output.containsKey(MsDb.Field.MZTHEO));
@@ -62,6 +64,15 @@ public class TestMsDb {
 		assertTrue(output.containsKey(MsDb.Field.COMP));
 
 		// Check that we have the same number of values for each field
-		// TODO
+		int s = -1;
+		for (MsDb.Field f: output.keySet()) {
+			if (s < 0)
+				s = output.get(f).size();
+			else
+				assertTrue(output.get(f).size() == s);
+		}
+
+		// Check that at least one line is returned.
+		assertTrue(s >= 1);
 	}
 }
