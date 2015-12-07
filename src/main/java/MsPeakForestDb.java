@@ -30,11 +30,19 @@ public class MsPeakForestDb extends MsDb {
 	 * @param useragent The user agent string to use when contacting the Peakforest URL.
 	 */
 	public MsPeakForestDb(REngine rengine, java.net.URL url, String useragent) throws REngineException, REXPMismatchException {
+
 		this.rengine = rengine;
+
+		// Thread safety: lock
+		int lock = this.rengine.lock();
+
 		this.rengine.parseAndEval("source('/Users/pierrick/dev/lcmsmatching/r-msdb/MsPeakForestDb.R', chdir = TRUE)");
 		this.rengine.parseAndEval("source('/Users/pierrick/dev/lcmsmatching/r-msdb/MsDbInputDataFrameStream.R', chdir = TRUE)");
 		this.rengine.parseAndEval("source('/Users/pierrick/dev/lcmsmatching/r-msdb/MsDbOutputDataFrameStream.R', chdir = TRUE)");
 		this.rengine.parseAndEval("db <- MsPeakForestDb$new(url = \"" + url + "\", useragent = \"" + useragent + "\")", null, true);
+
+		// Thread safety: unlock
+		this.rengine.unlock(lock);
 	}
 
 	////////////////////////
@@ -65,7 +73,8 @@ public class MsPeakForestDb extends MsDb {
 
 		// Is RT present ?
 
-		// TODO Thread safe ? lock/unlock
+		// Thread safety: lock
+		int lock = this.rengine.lock();
 
 		// Create input stream
 		this.rengine.assign("mz", collectionToREXPDouble(input.get(Field.MZ)));
@@ -90,6 +99,9 @@ public class MsPeakForestDb extends MsDb {
 		output.put(Field.MZTHEO, Arrays.asList(this.rengine.parseAndEval("output[[MSDB.TAG.MZTHEO]]").asDoubles()));
 		output.put(Field.ATTR, Arrays.asList(this.rengine.parseAndEval("output[[MSDB.TAG.ATTR]]").asStrings()));
 		output.put(Field.COMP, Arrays.asList(this.rengine.parseAndEval("output[[MSDB.TAG.COMP]]").asStrings()));
+
+		// Thread safety: unlock
+		this.rengine.unlock(lock);
 
 		return output;
 	}
