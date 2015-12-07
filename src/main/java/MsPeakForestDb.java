@@ -69,7 +69,13 @@ public class MsPeakForestDb extends MsDb {
 		if ( ! input.containsKey(Field.MZ))
 			throw new IllegalArgumentException("Input map must contain MZ values.");
 
-		// TODO Check that all vectors in input map have the same length
+		// Check that all vectors in input map have the same length
+		int s = -1;
+		for (Field f: input.keySet())
+			if (s < 0)
+				s = input.get(f).size();
+			else if (s != input.get(f).size())
+				throw new IllegalArgumentException("All collections in input map must have the same size.");
 
 		// Is RT present ?
 

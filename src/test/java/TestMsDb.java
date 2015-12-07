@@ -23,26 +23,52 @@ import org.rosuda.REngine.REXPMismatchException;
 public class TestMsDb {
 
 	REngine rengine = null;
+	MsPeakForestDb db = null;
 
-	///////////////////
-	// START RENGINE //
-	///////////////////
+	//////////////////////////
+	// START RENGINE AND DB //
+	//////////////////////////
 
 	@Before
-	public void startREngine() throws REngineException {
+	public void startREngineAndDb() throws java.net.MalformedURLException, REngineException, REXPMismatchException {
 		this.rengine = org.rosuda.REngine.JRI.JRIEngine.createEngine();
+		this.db = new MsPeakForestDb(this.rengine, new java.net.URL("http://rest.peakforest.org/"), "java-msdb.test ; pierrick.roger@gmail.com");
 	}
 
-	//////////////////
-	// STOP RENGINE //
-	//////////////////
+	/////////////////////////
+	// STOP RENGINE AND DB //
+	/////////////////////////
 
 	@After
-	public void stopREngine() {
+	public void stopREngineAndDb() {
 		if (rengine != null) {
 			this.rengine.close();
 			this.rengine = null;
+			this.db = null;
 		}
+	}
+
+	///////////////////////////
+	// TEST SEARCH ARGUMENTS //
+	///////////////////////////
+
+	@Test(expected=IllegalArgumentException.class)
+	public void testSearchNoMzInInput() throws REngineException, REXPMismatchException {
+		Map<MsDb.Field, Collection> input = new HashMap<MsDb.Field, Collection>();
+		Map<MsDb.Field, Collection> output = this.db.searchMzRt(input, MsDb.Mode.POSITIVE, 0.0, 5.0);
+	}
+
+	@Test(expected=IllegalArgumentException.class)
+	public void testSearchWrongSizesInInput() throws REngineException, REXPMismatchException {
+		Map<MsDb.Field, Collection> input = new HashMap<MsDb.Field, Collection>();
+		Vector<Double> mz = new Vector<Double>();
+		mz.add(100.0);
+		mz.add(110.0);
+		Vector<Double> rt = new Vector<Double>();
+		rt.add(3.5);
+		input.put(MsDb.Field.MZ, mz);
+		input.put(MsDb.Field.RT, rt);
+		Map<MsDb.Field, Collection> output = this.db.searchMzRt(input, MsDb.Mode.POSITIVE, 0.0, 5.0);
 	}
 
 	////////////////////
@@ -50,8 +76,7 @@ public class TestMsDb {
 	////////////////////
 
 	@Test
-	public void testMzSearch() throws java.net.MalformedURLException, REngineException, REXPMismatchException {
-		MsPeakForestDb db = new MsPeakForestDb(this.rengine, new java.net.URL("http://rest.peakforest.org/"), "java-msdb.test ; pierrick.roger@gmail.com");
+	public void testMzSearch() throws REngineException, REXPMismatchException {
 		Map<MsDb.Field, Collection> input = new HashMap<MsDb.Field, Collection>();
 		Vector<Double> mz = new Vector<Double>();
 		mz.add(100.0);
