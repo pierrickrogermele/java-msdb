@@ -45,6 +45,19 @@ public class MsPeakForestDb extends MsDb {
 		this.rengine.unlock(lock);
 	}
 
+	///////////////////
+	// GET MZ VALUES //
+	///////////////////
+
+	public double[] getMzValues(Mode mode) throws REngineException, REXPMismatchException {
+
+		// Set function parameters
+		String params = "mode = " + (mode == Mode.POSITIVE ? "MSDB.TAG.POS" : "MSDB.TAG.NEG");
+
+		// Call method
+		return this.rengine.parseAndEval("db$getMzValues(" + params + ")").asDoubles();
+	}
+
 	////////////////////////
 	// COLLECTION TO REXP //
 	////////////////////////

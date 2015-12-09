@@ -23,10 +23,12 @@ public abstract class MsDb {
 	public enum Field { MZ, RT, MOLID, MOLNAMES, MZTHEO, ATTR, COMP, COL, COLRT }
 
 	/**
-	 * Default constructor.
+	 * Get peak M/Z values contained in the database.
+	 *
+	 * @param mode  The MS mode to consider.
+	 * @return      An array of M/Z values.
 	 */
-	public MsDb() {
-	}
+	public abstract double[] getMzValues(Mode mode) throws REngineException, REXPMismatchException;
 
 	/**
 	 * @param input The input data.

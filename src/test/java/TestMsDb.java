@@ -48,6 +48,19 @@ public class TestMsDb {
 		}
 	}
 
+	////////////////////////
+	// TEST GET MZ VALUES //
+	////////////////////////
+
+	@Test
+	public void testGetMzValues() throws REngineException, REXPMismatchException {
+		double[] mzpos = this.db.getMzValues(MsDb.Mode.POSITIVE);
+		double[] mzneg = this.db.getMzValues(MsDb.Mode.NEGATIVE);
+		assertTrue(mzpos.length >= 0);
+		assertTrue(mzneg.length >= 0);
+		assertTrue(mzpos.length > 0 || mzneg.length > 0);
+	}
+
 	///////////////////////////
 	// TEST SEARCH ARGUMENTS //
 	///////////////////////////
