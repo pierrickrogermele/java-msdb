@@ -118,9 +118,46 @@ public class TestMsDb {
 		assertTrue(s >= 1);
 	}
 
-	////////////////////
-	// TEST MZ SEARCH //
-	////////////////////
+	////////////////////////////////////
+	// TEST MZ SEARCH EXISTING  VALUE //
+	////////////////////////////////////
+
+	@Test
+	public void testMzSearchExistingValue() throws REngineException, REXPMismatchException {
+		for (MsDb.Mode mode: MsDb.Mode.class.getEnumConstants()) {
+
+			// Get list of existing mz values in POS mode
+			double[] mzvals = this.db.getMzValues(mode);
+
+			if (mzvals.length > 0) {
+
+				double mz = mzvals[0];
+
+				// Search for the first mz
+				Map<MsDb.Field, Collection> input = new HashMap<MsDb.Field, Collection>();
+				Vector<Double> vmz = new Vector<Double>();
+				vmz.add(mz);
+				input.put(MsDb.Field.MZ, vmz);
+				Map<MsDb.Field, Collection> output = db.searchMzRt(input, mode, 0.0, 5.0, Double.NaN, Double.NaN, null);
+
+				// Check that all requested fields are present
+				assertTrue(output.containsKey(MsDb.Field.MOLID));
+				assertTrue(output.containsKey(MsDb.Field.MZ));
+
+				// Check that at least one line is returned.
+				assertTrue(output.get(MsDb.Field.MOLID).size() >= 1);
+
+				// Check that molid field is set.
+				Collection<String> molids = (Collection<String>)output.get(MsDb.Field.MOLID);
+				for (String molid: molids)
+					assertTrue(molid.length() > 0);
+			}
+		}
+	}
+
+	///////////////////////
+	// TEST MZ RT SEARCH //
+	///////////////////////
 
 	@Test
 	public void testMzRtSearch() throws REngineException, REXPMismatchException {
