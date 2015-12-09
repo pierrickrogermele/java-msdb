@@ -20,7 +20,7 @@ public abstract class MsDb {
 	public enum Mode { POSITIVE, NEGATIVE }
 
 	// Data fields
-	public enum Field { MZ, RT, MOLID, MZTHEO, ATTR, COMP }
+	public enum Field { MZ, RT, MOLID, MOLNAMES, MZTHEO, ATTR, COMP, COL, COLRT }
 
 	/**
 	 * Default constructor.
@@ -31,5 +31,5 @@ public abstract class MsDb {
 	/**
 	 * @param input The input data.
 	 */
-	public abstract Map<Field, Collection> searchMzRt(Map<Field, Collection> input, Mode mode, double shift, double prec) throws REngineException, REXPMismatchException;
+	public abstract Map<Field, Collection> searchMzRt(Map<Field, Collection> input, Mode mode, double shift, double prec, double rttolx, double rttoly, Collection<String> cols) throws REngineException, REXPMismatchException;
 }

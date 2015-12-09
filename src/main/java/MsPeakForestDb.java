@@ -63,7 +63,7 @@ public class MsPeakForestDb extends MsDb {
 	// SEARCH MZ RT //
 	//////////////////
 
-	public Map<Field, Collection> searchMzRt(Map<Field, Collection> input, Mode mode, double shift, double prec) throws REngineException, REXPMismatchException {
+	public Map<Field, Collection> searchMzRt(Map<Field, Collection> input, Mode mode, double shift, double prec, double rttolx, double rttoly, Collection<String> cols) throws REngineException, REXPMismatchException {
 
 		// Check that MZ is present
 		if ( ! input.containsKey(Field.MZ))
@@ -77,34 +77,54 @@ public class MsPeakForestDb extends MsDb {
 			else if (s != input.get(f).size())
 				throw new IllegalArgumentException("All collections in input map must have the same size.");
 
-		// Is RT present ?
-
 		// Thread safety: lock
 		int lock = this.rengine.lock();
 
 		// Create input stream
 		this.rengine.assign("mz", collectionToREXPDouble(input.get(Field.MZ)));
-		this.rengine.parseAndEval("input.stream <- MsDbInputDataFrameStream$new(msdb.make.input.df(mz))");
+		String inputmzrt = "mz = mz";
+		if (input.containsKey(Field.RT)) {
+			this.rengine.assign("rt", collectionToREXPDouble(input.get(Field.RT)));
+			inputmzrt += ", rt = rt";
+		}
+		this.rengine.parseAndEval("input.stream <- MsDbInputDataFrameStream$new(msdb.make.input.df(" + inputmzrt + "))");
 		this.rengine.parseAndEval("db$setInputStream(input.stream)");
 
 		// Create output stream
 		this.rengine.parseAndEval("output.stream <- MsDbOutputDataFrameStream$new()");
 		this.rengine.parseAndEval("db$addOutputStreams(output.stream)");
 
-		// Set MS mode value
-		this.rengine.parseAndEval("mode <- " + (mode == Mode.POSITIVE ? "MSDB.TAG.POS" : "MSDB.TAG.NEG"));
+		// Set function parameters
+		String params = "mode = " + (mode == Mode.POSITIVE ? "MSDB.TAG.POS" : "MSDB.TAG.NEG");
+		params += ", shift = " + shift;
+		params += ", prec = " + prec;
+		if (input.containsKey(Field.RT)) {
+			params += ", rt.tol.x = " + rttolx;
+			params += ", rt.tol.y = " + rttoly;
+			params += ", col = c(";
+			int i = 0;
+			for (String c: cols)
+				params += (i++ > 0 ? ", " : "") + "'" + c + "'";
+			params += ")";
+		}
 
 		// Call search method
-		this.rengine.parseAndEval("db$searchForMzRtList(mode = mode)");
+		this.rengine.parseAndEval("db$searchForMzRtList(" + params + ")");
 
 		// Get output
 		Map<Field, Collection> output = new HashMap<Field, Collection>();
 		this.rengine.parseAndEval("output <- output.stream$getDataFrame()");
 		output.put(Field.MOLID, Arrays.asList(this.rengine.parseAndEval("output[[MSDB.TAG.MOLID]]").asStrings()));
+		output.put(Field.MOLNAMES, Arrays.asList(this.rengine.parseAndEval("output[[MSDB.TAG.MOLNAMES]]").asStrings()));
 		output.put(Field.MZ, Arrays.asList(this.rengine.parseAndEval("output[[MSDB.TAG.MZ]]").asDoubles()));
 		output.put(Field.MZTHEO, Arrays.asList(this.rengine.parseAndEval("output[[MSDB.TAG.MZTHEO]]").asDoubles()));
 		output.put(Field.ATTR, Arrays.asList(this.rengine.parseAndEval("output[[MSDB.TAG.ATTR]]").asStrings()));
 		output.put(Field.COMP, Arrays.asList(this.rengine.parseAndEval("output[[MSDB.TAG.COMP]]").asStrings()));
+		if (input.containsKey(Field.RT)) {
+			output.put(Field.RT, Arrays.asList(this.rengine.parseAndEval("output[[MSDB.TAG.RT]]").asDoubles()));
+			output.put(Field.COLRT, Arrays.asList(this.rengine.parseAndEval("output[[MSDB.TAG.COLRT]]").asDoubles()));
+			output.put(Field.COL, Arrays.asList(this.rengine.parseAndEval("output[[MSDB.TAG.COL]]").asStrings()));
+		}
 
 		// Thread safety: unlock
 		this.rengine.unlock(lock);

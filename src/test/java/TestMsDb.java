@@ -55,7 +55,7 @@ public class TestMsDb {
 	@Test(expected=IllegalArgumentException.class)
 	public void testSearchNoMzInInput() throws REngineException, REXPMismatchException {
 		Map<MsDb.Field, Collection> input = new HashMap<MsDb.Field, Collection>();
-		Map<MsDb.Field, Collection> output = this.db.searchMzRt(input, MsDb.Mode.POSITIVE, 0.0, 5.0);
+		Map<MsDb.Field, Collection> output = this.db.searchMzRt(input, MsDb.Mode.POSITIVE, 0.0, 5.0, Double.NaN, Double.NaN, null);
 	}
 
 	@Test(expected=IllegalArgumentException.class)
@@ -68,7 +68,7 @@ public class TestMsDb {
 		rt.add(3.5);
 		input.put(MsDb.Field.MZ, mz);
 		input.put(MsDb.Field.RT, rt);
-		Map<MsDb.Field, Collection> output = this.db.searchMzRt(input, MsDb.Mode.POSITIVE, 0.0, 5.0);
+		Map<MsDb.Field, Collection> output = this.db.searchMzRt(input, MsDb.Mode.POSITIVE, 0.0, 5.0, Double.NaN, Double.NaN, null);
 	}
 
 	////////////////////
@@ -77,18 +77,64 @@ public class TestMsDb {
 
 	@Test
 	public void testMzSearch() throws REngineException, REXPMismatchException {
+
 		Map<MsDb.Field, Collection> input = new HashMap<MsDb.Field, Collection>();
 		Vector<Double> mz = new Vector<Double>();
 		mz.add(100.0);
 		input.put(MsDb.Field.MZ, mz);
-		Map<MsDb.Field, Collection> output = db.searchMzRt(input, MsDb.Mode.POSITIVE, 0.0, 5.0);
+		Map<MsDb.Field, Collection> output = db.searchMzRt(input, MsDb.Mode.POSITIVE, 0.0, 5.0, Double.NaN, Double.NaN, null);
 
 		// Check that all requested fields are present
 		assertTrue(output.containsKey(MsDb.Field.MOLID));
+		assertTrue(output.containsKey(MsDb.Field.MOLNAMES));
 		assertTrue(output.containsKey(MsDb.Field.MZ));
 		assertTrue(output.containsKey(MsDb.Field.MZTHEO));
 		assertTrue(output.containsKey(MsDb.Field.ATTR));
 		assertTrue(output.containsKey(MsDb.Field.COMP));
+
+		// Check that we have the same number of values for each field
+		int s = -1;
+		for (MsDb.Field f: output.keySet()) {
+			if (s < 0)
+				s = output.get(f).size();
+			else
+				assertTrue(output.get(f).size() == s);
+		}
+
+		// Check that at least one line is returned.
+		assertTrue(s >= 1);
+	}
+
+	////////////////////
+	// TEST MZ SEARCH //
+	////////////////////
+
+	@Test
+	public void testMzRtSearch() throws REngineException, REXPMismatchException {
+
+		Map<MsDb.Field, Collection> input = new HashMap<MsDb.Field, Collection>();
+		Vector<Double> mz = new Vector<Double>();
+		Vector<Double> rt = new Vector<Double>();
+		mz.add(100.0);
+		rt.add(6.5);
+		input.put(MsDb.Field.MZ, mz);
+		input.put(MsDb.Field.RT, rt);
+
+		Vector<String> cols = new Vector<String>();
+		cols.add("blabla"); // TODO
+
+		Map<MsDb.Field, Collection> output = db.searchMzRt(input, MsDb.Mode.POSITIVE, 0.0, 5.0, 5.0, 0.8, cols);
+
+		// Check that all requested fields are present
+		assertTrue(output.containsKey(MsDb.Field.MOLID));
+		assertTrue(output.containsKey(MsDb.Field.MOLNAMES));
+		assertTrue(output.containsKey(MsDb.Field.MZ));
+		assertTrue(output.containsKey(MsDb.Field.MZTHEO));
+		assertTrue(output.containsKey(MsDb.Field.ATTR));
+		assertTrue(output.containsKey(MsDb.Field.COMP));
+		assertTrue(output.containsKey(MsDb.Field.RT));
+		assertTrue(output.containsKey(MsDb.Field.COLRT));
+		assertTrue(output.containsKey(MsDb.Field.COL));
 
 		// Check that we have the same number of values for each field
 		int s = -1;
