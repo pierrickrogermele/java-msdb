@@ -85,7 +85,7 @@ public class MsPeakForestDb extends MsDb {
 
 		// Fill the map
 		for (String c: colids)
-			rt.put(c, this.rengine.parseAndEval("rt[[" + c +"]]").asDoubles());
+			rt.put(c, this.rengine.parseAndEval("rt[['" + c +"']]").asDoubles());
 
 		return rt;
 	}
