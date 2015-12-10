@@ -11,6 +11,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Vector;
 import java.util.HashMap;
+import java.util.Iterator;
 import org.rosuda.REngine.REngine;
 import org.rosuda.REngine.REXP;
 import org.rosuda.REngine.REXPDouble;
@@ -95,7 +96,7 @@ public class TestMsDb {
 		Vector<Double> mz = new Vector<Double>();
 		mz.add(100.0);
 		input.put(MsDb.Field.MZ, mz);
-		Map<MsDb.Field, Collection> output = db.searchMzRt(input, MsDb.Mode.POSITIVE, 0.0, 5.0, Double.NaN, Double.NaN, null);
+		Map<MsDb.Field, Collection> output = this.db.searchMzRt(input, MsDb.Mode.POSITIVE, 0.0, 5.0, Double.NaN, Double.NaN, null);
 
 		// Check that all requested fields are present
 		assertTrue(output.containsKey(MsDb.Field.MOLID));
@@ -118,12 +119,13 @@ public class TestMsDb {
 		assertTrue(s >= 1);
 	}
 
-	////////////////////////////////////
-	// TEST MZ SEARCH EXISTING  VALUE //
-	////////////////////////////////////
+	///////////////////////////////////
+	// TEST MZ SEARCH EXISTING VALUE //
+	///////////////////////////////////
 
 	@Test
 	public void testMzSearchExistingValue() throws REngineException, REXPMismatchException {
+
 		for (MsDb.Mode mode: MsDb.Mode.class.getEnumConstants()) {
 
 			// Get list of existing mz values in POS mode
@@ -138,7 +140,7 @@ public class TestMsDb {
 				Vector<Double> vmz = new Vector<Double>();
 				vmz.add(mz);
 				input.put(MsDb.Field.MZ, vmz);
-				Map<MsDb.Field, Collection> output = db.searchMzRt(input, mode, 0.0, 5.0, Double.NaN, Double.NaN, null);
+				Map<MsDb.Field, Collection> output = this.db.searchMzRt(input, mode, 0.0, 5.0, Double.NaN, Double.NaN, null);
 
 				// Check that all requested fields are present
 				assertTrue(output.containsKey(MsDb.Field.MOLID));
@@ -173,7 +175,7 @@ public class TestMsDb {
 		Vector<String> cols = new Vector<String>();
 		cols.add("blabla"); // TODO
 
-		Map<MsDb.Field, Collection> output = db.searchMzRt(input, MsDb.Mode.POSITIVE, 0.0, 5.0, 5.0, 0.8, cols);
+		Map<MsDb.Field, Collection> output = this.db.searchMzRt(input, MsDb.Mode.POSITIVE, 0.0, 5.0, 5.0, 0.8, cols);
 
 		// Check that all requested fields are present
 		assertTrue(output.containsKey(MsDb.Field.MOLID));
@@ -197,5 +199,73 @@ public class TestMsDb {
 
 		// Check that at least one line is returned.
 		assertTrue(s >= 1);
+	}
+
+	//////////////////////////////////////
+	// TEST MZ/RT SEARCH EXISTING VALUE //
+	//////////////////////////////////////
+
+	@Test
+	public void testMzRtSearchExistingValue() throws REngineException, REXPMismatchException {
+
+		for (MsDb.Mode mode: MsDb.Mode.class.getEnumConstants()) {
+
+			// Get list of existing mz values in POS mode
+			double[] mzvals = this.db.getMzValues(mode);
+
+			if (mzvals.length > 0) {
+
+				double mz = mzvals[0];
+
+				// Search for the first mz
+				Map<MsDb.Field, Collection> input = new HashMap<MsDb.Field, Collection>();
+				Vector<Double> vmz = new Vector<Double>();
+				vmz.add(mz);
+				input.put(MsDb.Field.MZ, vmz);
+				Map<MsDb.Field, Collection> output = this.db.searchMzRt(input, mode, 0.0, 5.0, Double.NaN, Double.NaN, null);
+
+				// Check that all requested fields are present
+				assertTrue(output.containsKey(MsDb.Field.MOLID));
+				assertTrue(output.containsKey(MsDb.Field.MZ));
+
+				// Check that at least one line is returned.
+				assertTrue(output.get(MsDb.Field.MOLID).size() >= 1);
+
+				// Check that molid field is set.
+				Collection<String> molids = (Collection<String>)output.get(MsDb.Field.MOLID);
+				for (String molid: molids) {
+					assertTrue(molid.length() > 0);
+
+					Map<String, double[]> rts = this.db.getRetentionTimes(molid, null);
+					for (Map.Entry<String, double[]> e: rts.entrySet()) {
+
+						for(double rt: e.getValue()) {
+
+							// Add RT value to input map
+							Vector<Double> vrt = new Vector<Double>();
+							vrt.add(rt);
+							input.put(MsDb.Field.RT, vrt);
+
+							// Set cols
+							Vector<String> cols = new Vector<String>();
+							cols.add(e.getKey());
+
+							// Search for MZ/RT
+							Map<MsDb.Field, Collection> rtoutput = this.db.searchMzRt(input, mode, 0.0, 5.0, 5.0, 0.8, cols);
+
+							// Check that all requested fields are present
+							assertTrue(rtoutput.containsKey(MsDb.Field.MOLID));
+							assertTrue(rtoutput.containsKey(MsDb.Field.MZ));
+							assertTrue(rtoutput.containsKey(MsDb.Field.RT));
+							assertTrue(rtoutput.containsKey(MsDb.Field.COL));
+							assertTrue(rtoutput.containsKey(MsDb.Field.COLRT));
+
+							// Check that at least one line is returned.
+							assertTrue(rtoutput.get(MsDb.Field.MOLID).size() >= 1);
+						}
+					}
+				}
+			}
+		}
 	}
 }

@@ -39,7 +39,7 @@ public class MsPeakForestDb extends MsDb {
 		this.rengine.parseAndEval("source('/Users/pierrick/dev/lcmsmatching/r-msdb/MsPeakForestDb.R', chdir = TRUE)");
 		this.rengine.parseAndEval("source('/Users/pierrick/dev/lcmsmatching/r-msdb/MsDbInputDataFrameStream.R', chdir = TRUE)");
 		this.rengine.parseAndEval("source('/Users/pierrick/dev/lcmsmatching/r-msdb/MsDbOutputDataFrameStream.R', chdir = TRUE)");
-		this.rengine.parseAndEval("db <- MsPeakForestDb$new(url = \"" + url + "\", useragent = \"" + useragent + "\")", null, true);
+		this.rengine.parseAndEval("db <- MsPeakForestDb$new(url = \"" + url + "\", useragent = \"" + useragent + "\")");
 
 		// Thread safety: unlock
 		this.rengine.unlock(lock);
@@ -56,6 +56,38 @@ public class MsPeakForestDb extends MsDb {
 
 		// Call method
 		return this.rengine.parseAndEval("db$getMzValues(" + params + ")").asDoubles();
+	}
+
+	/////////////////////////
+	// GET RETENTION TIMES //
+	/////////////////////////
+
+	public Map<String, double[]> getRetentionTimes(String molid, String[] cols) throws REngineException, REXPMismatchException {
+
+		// Set function parameters
+		String params = "molid = " + molid;
+		if (cols != null) {
+			params += ", col = c(";
+			int i = 0;
+			for (String c: cols)
+				params += (i > 0 ? ", " : "") + "'" + c + "'";
+			params += ")";
+		}
+
+		// Call method
+		this.rengine.parseAndEval("rt <- db$getRetentionTimes(" + params + ")");
+
+		// Create returned structure
+		Map<String, double[]> rt = new HashMap<String, double[]>();
+
+		// Get column IDs
+		String[] colids = this.rengine.parseAndEval("names(rt)").asStrings();
+
+		// Fill the map
+		for (String c: colids)
+			rt.put(c, this.rengine.parseAndEval("rt[[" + c +"]]").asDoubles());
+
+		return rt;
 	}
 
 	////////////////////////
