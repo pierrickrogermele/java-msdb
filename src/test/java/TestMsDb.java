@@ -33,7 +33,7 @@ public class TestMsDb {
 	@Before
 	public void startREngineAndDb() throws java.net.MalformedURLException, REngineException, REXPMismatchException {
 		this.rengine = org.rosuda.REngine.JRI.JRIEngine.createEngine();
-		this.db = new MsPeakForestDb(this.rengine, new java.net.URL("http://rest.peakforest.org/"), "java-msdb.test ; pierrick.roger@gmail.com");
+		this.db = new MsPeakForestDb(this.rengine, new java.net.URL("https://rest.peakforest.org/"), "java-msdb.test ; pierrick.roger@gmail.com");
 	}
 
 	/////////////////////////
