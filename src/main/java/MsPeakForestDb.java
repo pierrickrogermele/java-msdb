@@ -20,6 +20,7 @@ public class MsPeakForestDb extends MsDb {
 
 	private REngine rengine = null;
 	private REXP pfdb = null; // MsPeakForestDb R instance. 
+	private MzTolUnit mztolunit = MzTolUnit.PPM;
 
 	/**
 	 * Constructor.
@@ -43,6 +44,16 @@ public class MsPeakForestDb extends MsDb {
 
 		// Thread safety: unlock
 		this.rengine.unlock(lock);
+	}
+
+	///////////////////////////
+	// SET MZ TOLERANCE UNIT //
+	///////////////////////////
+	
+	public MzTolUnit setMzTolUnit(MzTolUnit unit) {
+		MzTolUnit old = this.mztolunit;
+		this.mztolunit = unit;
+		return(old);
 	}
 
 	///////////////////
@@ -138,6 +149,9 @@ public class MsPeakForestDb extends MsDb {
 		// Create output stream
 		this.rengine.parseAndEval("output.stream <- MsDbOutputDataFrameStream$new()");
 		this.rengine.parseAndEval("db$addOutputStreams(output.stream)");
+
+		// Set M/Z tolerance unit
+		this.rengine.parseAndEval("db$setMzTolUnit(" + (this.mztolunit == MzTolUnit.PPM ? "MSDB.MZTOLUNIT.PPM" : "MSDB.MZTOLUNIT.PLAIN") + ")");
 
 		// Set function parameters
 		String params = "mode = " + (mode == Mode.POSITIVE ? "MSDB.TAG.POS" : "MSDB.TAG.NEG");

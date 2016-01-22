@@ -119,6 +119,42 @@ public class TestMsDb {
 		assertTrue(s >= 1);
 	}
 
+	//////////////////////////
+	// TEST MZ PLAIN SEARCH //
+	//////////////////////////
+
+	@Test
+	public void testMzPlainSearch() throws REngineException, REXPMismatchException {
+
+		Map<MsDb.Field, Collection> input = new HashMap<MsDb.Field, Collection>();
+		Vector<Double> mz = new Vector<Double>();
+		mz.add(100.0);
+		input.put(MsDb.Field.MZ, mz);
+		MsDb.MzTolUnit old_mztolunit = this.db.setMzTolUnit(MsDb.MzTolUnit.PLAIN);
+		Map<MsDb.Field, Collection> output = this.db.searchMzRt(input, MsDb.Mode.POSITIVE, 0.0, 0.1, Double.NaN, Double.NaN, null);
+		this.db.setMzTolUnit(old_mztolunit);
+
+		// Check that all requested fields are present
+		assertTrue(output.containsKey(MsDb.Field.MOLID));
+		assertTrue(output.containsKey(MsDb.Field.MOLNAMES));
+		assertTrue(output.containsKey(MsDb.Field.MZ));
+		assertTrue(output.containsKey(MsDb.Field.MZTHEO));
+		assertTrue(output.containsKey(MsDb.Field.ATTR));
+		assertTrue(output.containsKey(MsDb.Field.COMP));
+
+		// Check that we have the same number of values for each field
+		int s = -1;
+		for (MsDb.Field f: output.keySet()) {
+			if (s < 0)
+				s = output.get(f).size();
+			else
+				assertTrue(output.get(f).size() == s);
+		}
+
+		// Check that at least one line is returned.
+		assertTrue(s >= 1);
+	}
+
 	///////////////////////////////////
 	// TEST MZ SEARCH EXISTING VALUE //
 	///////////////////////////////////

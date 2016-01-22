@@ -29,6 +29,24 @@ public abstract class MsDb {
 	public enum Field { MZ, RT, MOLID, MOLNAMES, MZTHEO, ATTR, COMP, COL, COLRT }
 
 	/**
+	 * M/Z tolerance unit.
+	 * Used in an database instance to specify the unit to use for the parameters shift and prec.
+	 *
+	 * @author Pierrick Roger
+	 */
+	public enum MzTolUnit { PPM, PLAIN }
+
+	/**
+	 * Set M/Z tolerance unit.
+	 *
+	 * @param unit  The new M/Z tolerance unit.
+	 * @return      The old M/Z tolerance unit.
+	 *
+	 * @author  Pierrick Roger
+	 */
+	public abstract MzTolUnit setMzTolUnit(MzTolUnit unit);
+
+	/**
 	 * Get peak M/Z values contained in the database.
 	 *
 	 * @param mode  The MS mode to consider.
